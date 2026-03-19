@@ -1,0 +1,13 @@
+{
+  "name": "dhyan-sathi",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Focus timer and study watch with preset deep-work cycles, task anchoring, progress tracking, and notification-ready browser flow.",
+  "scripts": {
+    "build": "esbuild src/app.ts --bundle --format=iife --target=es2020 --outfile=app.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.25.2"
+  }
+}

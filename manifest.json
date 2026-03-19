@@ -1,0 +1,17 @@
+{
+  "name": "Dhyan Sathi",
+  "short_name": "Dhyan",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#112219",
+  "theme_color": "#112219",
+  "description": "Focus timer and study watch with preset deep-work cycles, task anchoring, progress tracking, and notification-ready browser flow.",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -8,10 +8,11 @@
   "description": "Focus timer and study watch with preset deep-work cycles, task anchoring, progress tracking, and notification-ready browser flow.",
   "icons": [
     {
-      "src": "logo.svg",
+      "src": "logo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
 }
+

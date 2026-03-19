@@ -1,4 +1,4 @@
-# Dhyan Sathi
+﻿# Dhyan Sathi
 
 ## About
 
@@ -9,6 +9,12 @@ Focus timer and study watch with preset deep-work cycles and break rhythm.
 - GitHub repo: https://github.com/SnakeEye-sudo/Dhyan-Sathi
 - Tags: sathi-family, focus-timer, pomodoro, study-tools, pwa, hindi-app
 
+<!-- app-screenshot:start -->
+## App Screenshot
+
+![App screenshot](docs/preview.png)
+
+<!-- app-screenshot:end -->
 ## Creator
 
 Built and originally created by **Er. Sangam Krishna** ([SnakeEye-sudo](https://github.com/SnakeEye-sudo)).
@@ -24,3 +30,4 @@ Built and originally created by **Er. Sangam Krishna** ([SnakeEye-sudo](https://
 This repository uses the **MIT License** with a required **NOTICE** file.
 That means collaboration is allowed, but copyright and attribution notices must stay preserved.
 See [LICENSE](LICENSE), [NOTICE](NOTICE), and [CONTRIBUTING.md](CONTRIBUTING.md).
+

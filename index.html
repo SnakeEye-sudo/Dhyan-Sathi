@@ -3,83 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#112219">
-  <meta name="description" content="Focus timer and study watch with preset deep-work cycles, task anchoring, progress tracking, and notification-ready browser flow.">
+  <meta name="theme-color" content="#0e1d17">
+  <meta name="description" content="Immersive study watch app with fullscreen analog timer, daily logs, motivation, and monthly study summary.">
   <title>Dhyan Sathi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-theme="night">
-  <div class="ambient-layer">
-    <div class="ambient-orb orb-a"></div>
-    <div class="ambient-orb orb-b"></div>
-    <div class="ambient-grid"></div>
-    <div class="ambient-noise"></div>
-  </div>
-
-  <div class="page-shell">
-    <header class="hero">
-      <div class="hero-top">
-        <div class="brand-wrap">
-          <img src="logo.svg" alt="Dhyan Sathi logo" class="brand-logo">
-          <div>
-            <p class="hero-tag">Focus lamp timer</p>
-            <h1>Dhyan Sathi</h1>
-          </div>
-        </div>
-        <a class="family-chip" href="https://snakeeye-sudo.github.io/Aapka-Sathi/">Aapka-Sathi family</a>
-      </div>
-
-      <div class="hero-grid">
-        <section class="hero-copy">
-          <p class="eyebrow">Calm deep-work desk</p>
-          <h2 class="hero-headline">Study watch, focus cycle, aur break rhythm ek soothing timer me.</h2>
-          <p class="hero-text">25, 45, aur 60 minute focus presets ke saath task anchor aur notification-ready cycles, taaki padhai me pace bana rahe.</p>
-          <div class="hero-badges">
-            <span class="hero-badge">Study timer</span><span class="hero-badge">Preset cycles</span><span class="hero-badge">Break switch</span><span class="hero-badge">Task anchor</span>
-          </div>
-        </section>
-
-        <section class="hero-side">
-          <div class="metric-card">
-            <p class="eyebrow">Flow mode</p>
-            <h3>One task at a time</h3>
-            <strong>Pomodoro+</strong>
-            <p class="muted">Gentle timer without clutter.</p>
-          </div>
-          <div class="metric-card secondary">
-            <p class="eyebrow">Info</p>
-            <h3>Session rhythm</h3>
-            <p class="muted">Focus aur break dono same board par.</p>
-          </div>
-        </section>
-      </div>
-    </header>
-
-    <main id="appRoot" class="app-root"></main>
-
-    <footer class="site-footer">
-      <div class="footer-brand">
-        <img src="logo.svg" alt="Dhyan Sathi logo">
-        <div>
-          <strong>Dhyan Sathi</strong>
-          <p>Study flow ko halka aur disciplined banane ke liye.</p>
-        </div>
-      </div>
-      <nav class="footer-links">
-        <a href="about.html">About</a>
-        <a href="resources.html">Resources</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy-policy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-      </nav>
-    </footer>
-  </div>
-
+<body>
+  <main id="appRoot"></main>
   <script src="app.js"></script>
+  <script defer src="notification-prompt.js"></script>
 </body>
 </html>

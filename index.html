@@ -1,23 +1,722 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0e1d17">
-  <meta name="description" content="Immersive study watch app with fullscreen analog timer, daily logs, motivation, and monthly study summary.">
-  <title>Dhyan Sathi</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="description" content="Dhyan Sathi – Focus timer and study watch for deep work sessions">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dhyan Sathi ⏱️</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #161627;
+    --surface2: #1e1e36;
+    --border: rgba(139,92,246,0.15);
+    --accent: #8b5cf6;
+    --accent2: #a78bfa;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --success: #22d3ee;
+    --danger: #f87171;
+    --radius: 20px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --timer-size: min(72vw, 340px);
+  }
+  [data-theme="light"] {
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --surface2: #ede9fe;
+    --border: rgba(139,92,246,0.2);
+    --text: #1e1b4b;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-icon { font-size: 22px; }
+  .topbar-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .topbar-sub { font-size: 11px; color: var(--muted); }
+  .topbar-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .icon-btn:active { transform: scale(0.92); }
+
+  /* MAIN SCROLL AREA */
+  .main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
+
+  /* TIMER SECTION */
+  .timer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 20px;
+    gap: 16px;
+  }
+  .timer-ring-wrap { position: relative; width: var(--timer-size); height: var(--timer-size); }
+  .timer-ring {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 20px rgba(139,92,246,0.4));
+  }
+  .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+  .ring-progress {
+    fill: none;
+    stroke: url(#ringGrad);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .timer-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .timer-display {
+    font-size: clamp(40px, 14vw, 64px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .timer-rounds {
+    display: flex; gap: 6px;
+    margin-top: 4px;
+  }
+  .round-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    transition: all 0.3s;
+  }
+  .round-dot.filled { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+  /* TASK INPUT */
+  .task-bar {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 16px;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+  }
+  .task-bar span { font-size: 18px; }
+  .task-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 15px;
+    color: var(--text);
+    min-width: 0;
+  }
+  .task-input::placeholder { color: var(--muted); }
+
+  /* PRESETS */
+  .presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  .preset-btn {
+    padding: 8px 16px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+  }
+  .preset-btn.active, .preset-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+  }
+  .preset-btn:active { transform: scale(0.94); }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  .ctrl-btn {
+    flex: 1;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .ctrl-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 6px 20px rgba(139,92,246,0.4);
+    font-size: 16px;
+    flex: 2;
+  }
+  .ctrl-btn.primary.running {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    border-color: #ef4444;
+    box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+  }
+  .ctrl-btn:active { transform: scale(0.95); }
+
+  /* STATS SECTION */
+  .section-header {
+    padding: 20px 20px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .stat-val { font-size: 24px; font-weight: 800; color: var(--accent2); }
+  .stat-key { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+
+  /* LOGS */
+  .logs-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .log-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .log-icon { font-size: 20px; }
+  .log-info { flex: 1; min-width: 0; }
+  .log-task { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .log-dur { font-size: 13px; color: var(--accent2); font-weight: 700; white-space: nowrap; }
+  .empty-state { text-align: center; padding: 32px 20px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+  /* MOTIVATION BANNER */
+  .motivation-card {
+    margin: 12px 20px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(167,139,250,0.08));
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 18px;
+    padding: 18px;
+    font-size: 14px;
+    color: var(--accent2);
+    font-style: italic;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: var(--font);
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 600; }
+  .nav-item:active { transform: scale(0.9); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* OVERLAY */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #1a0a3d 0%, #0d0d1a 70%);
+    z-index: 200;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .overlay.visible { display: flex; }
+  .overlay-clock {
+    font-size: clamp(72px, 22vw, 120px);
+    font-weight: 900;
+    color: var(--accent2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -4px;
+    text-shadow: 0 0 40px rgba(139,92,246,0.8);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { text-shadow: 0 0 40px rgba(139,92,246,0.8); }
+    50% { text-shadow: 0 0 70px rgba(139,92,246,1), 0 0 100px rgba(167,139,250,0.6); }
+  }
+  .overlay-task { font-size: 18px; color: var(--muted); font-weight: 500; }
+  .overlay-close {
+    padding: 14px 32px;
+    border-radius: 50px;
+    border: 1.5px solid rgba(139,92,246,0.4);
+    background: rgba(139,92,246,0.15);
+    color: var(--accent2);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    font-family: var(--font);
+    transition: all 0.2s;
+  }
+  .overlay-close:active { transform: scale(0.95); }
+
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f5f3ff; --surface: #fff; --surface2: #ede9fe; --text: #1e1b4b; --muted: #6b7280; }
+  }
+</style>
 </head>
-<body>
-  <main id="appRoot"></main>
-  <script src="app.js"></script>
-  <script defer src="notification-prompt.js"></script>
+<body data-theme="dark">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="topbar-icon">⏱️</span>
+    <div>
+      <div class="topbar-title">Dhyan Sathi</div>
+      <div class="topbar-sub">Focus Timer</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="themeBtn" title="Toggle theme">🌙</button>
+    <button class="icon-btn" id="overlayBtn" title="Fullscreen mode">⛶</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainArea">
+
+  <!-- TIMER VIEW -->
+  <div class="view active" id="view-timer">
+    <div class="timer-section">
+
+      <!-- Ring Timer -->
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8b5cf6"/>
+              <stop offset="100%" stop-color="#22d3ee"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="100" cy="100" r="88"/>
+          <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88"
+            stroke-dasharray="553" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerLabel">Focus Mode</div>
+          <div class="timer-rounds" id="timerRounds"></div>
+        </div>
+      </div>
+
+      <!-- Task Input -->
+      <div class="task-bar">
+        <span>📝</span>
+        <input class="task-input" id="taskInput" type="text" placeholder="Aaj ka task likhо..." maxlength="60">
+      </div>
+
+      <!-- Presets -->
+      <div class="presets" id="presetsRow">
+        <button class="preset-btn active" data-min="25">25 min</button>
+        <button class="preset-btn" data-min="45">45 min</button>
+        <button class="preset-btn" data-min="50">50 min</button>
+        <button class="preset-btn" data-min="60">60 min</button>
+        <button class="preset-btn" data-min="90">90 min</button>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctrl-btn" id="resetBtn">↺ Reset</button>
+        <button class="ctrl-btn primary" id="startBtn">▶ Start Focus</button>
+      </div>
+
+    </div>
+
+    <!-- Motivation -->
+    <div class="motivation-card" id="motivationCard">
+      "Ek focused session ki value 10 distracted ghanton se zyada hoti hai."
+    </div>
+
+    <!-- Today Stats -->
+    <div class="section-header">Aaj ki progress</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="statRounds">0</div>
+        <div class="stat-key">Sessions complete</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statMinutes">0</div>
+        <div class="stat-key">Total minutes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statStreak">0</div>
+        <div class="stat-key">Day streak 🔥</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS VIEW -->
+  <div class="view" id="view-logs">
+    <div class="section-header">Session history</div>
+    <div class="logs-list" id="logsList">
+      <div class="empty-state">
+        ⏱️<br>Abhi koi session complete nahi hua.<br>Pehla focus session start karo!
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="timer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Timer</span>
+  </button>
+  <button class="nav-item" data-view="logs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <span>Logs</span>
+  </button>
+</nav>
+
+<!-- FULLSCREEN OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-clock" id="overlayClock">25:00</div>
+  <div class="overlay-task" id="overlayTask">Focus Mode</div>
+  <button class="overlay-close" id="overlayClose">Wapas aao</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'dhyan-v3';
+const QUOTES = [
+  '"Ek focused session ki value 10 distracted ghanton se zyada hoti hai."',
+  '"Har ek minute jo tune abhi invest kiya, kal ke liye compound hoga."',
+  '"Distraction se nahi, dedication se future banta hai."',
+  '"Deep work wahi karta hai jo really aage jaana chahta hai."',
+  '"Timer start karna hi sabse bada step hai. Baaki khud ho jaata hai."',
+  '"Focus is the new IQ. Tu already smart hai — bas ek session aur."',
+  '"Thoda mushkil lagta hai? Matlab tu sahi raaste par hai."',
+];
+
+let state = load();
+let timerId = null;
+let totalSeconds = 0;
+let remainingSeconds = 0;
+let isRunning = false;
+let selectedMinutes = 25;
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState(); }
+  catch { return defaultState(); }
+}
+function defaultState() {
+  return { logs: [], todayDate: '', todaySessions: 0, todayMinutes: 0, streak: 0, lastSessionDate: '' };
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function secs2str(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateDisplay() {
+  const t = secs2str(remainingSeconds);
+  document.getElementById('timerDisplay').textContent = t;
+  document.getElementById('overlayClock').textContent = t;
+
+  const progress = totalSeconds > 0 ? (totalSeconds - remainingSeconds) / totalSeconds : 0;
+  const circumference = 553;
+  document.getElementById('ringProgress').style.strokeDashoffset = circumference * (1 - progress);
+
+  const rounds = Math.min(state.todaySessions, 8);
+  const roundsEl = document.getElementById('timerRounds');
+  roundsEl.innerHTML = '';
+  for (let i = 0; i < Math.max(rounds, 4); i++) {
+    const d = document.createElement('div');
+    d.className = 'round-dot' + (i < rounds ? ' filled' : '');
+    roundsEl.appendChild(d);
+  }
+
+  document.getElementById('statRounds').textContent = state.todaySessions;
+  document.getElementById('statMinutes').textContent = state.todayMinutes;
+  document.getElementById('statStreak').textContent = state.streak;
+}
+
+function startTimer() {
+  if (isRunning) return pauseTimer();
+  if (remainingSeconds <= 0) {
+    remainingSeconds = selectedMinutes * 60;
+    totalSeconds = remainingSeconds;
+  }
+  isRunning = true;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = '⏸ Pause';
+  btn.classList.add('running');
+  document.getElementById('timerLabel').textContent = document.getElementById('taskInput').value || 'Focus Mode';
+  document.getElementById('overlayTask').textContent = document.getElementById('taskInput').value || 'Focus Mode';
+  timerId = setInterval(tick, 1000);
+}
+
+function pauseTimer() {
+  isRunning = false;
+  clearInterval(timerId);
+  const btn = document.getElementById('startBtn');
+  btn.textContent = '▶ Resume';
+  btn.classList.remove('running');
+}
+
+function resetTimer() {
+  pauseTimer();
+  remainingSeconds = selectedMinutes * 60;
+  totalSeconds = remainingSeconds;
+  document.getElementById('startBtn').textContent = '▶ Start Focus';
+  document.getElementById('ringProgress').style.strokeDashoffset = '0';
+  updateDisplay();
+}
+
+function tick() {
+  if (remainingSeconds <= 0) {
+    sessionComplete();
+    return;
+  }
+  remainingSeconds--;
+  updateDisplay();
+}
+
+function sessionComplete() {
+  clearInterval(timerId);
+  isRunning = false;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = '▶ Start Focus';
+  btn.classList.remove('running');
+
+  const today = new Date().toDateString();
+  const mins = selectedMinutes;
+  const task = document.getElementById('taskInput').value || 'Focus Session';
+
+  if (state.todayDate !== today) {
+    state.todayDate = today;
+    state.todaySessions = 0;
+    state.todayMinutes = 0;
+  }
+  state.todaySessions++;
+  state.todayMinutes += mins;
+
+  // Streak
+  const yest = new Date(Date.now() - 86400000).toDateString();
+  if (state.lastSessionDate === yest || state.lastSessionDate === today) {
+    if (state.lastSessionDate !== today) state.streak++;
+  } else {
+    state.streak = 1;
+  }
+  state.lastSessionDate = today;
+
+  state.logs.unshift({
+    task, mins, ts: Date.now(),
+    date: new Date().toLocaleString('hi-IN', { dateStyle: 'short', timeStyle: 'short' })
+  });
+  if (state.logs.length > 50) state.logs.pop();
+
+  save();
+  updateDisplay();
+  renderLogs();
+
+  // Notify
+  if (Notification.permission === 'granted') {
+    new Notification('Dhyan Sathi ⏱️', {
+      body: `${task} – ${mins} minute session complete! 🎉`,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏱️</text></svg>'
+    });
+  }
+
+  // Reset for next
+  remainingSeconds = selectedMinutes * 60;
+  totalSeconds = remainingSeconds;
+  document.getElementById('ringProgress').style.strokeDashoffset = '0';
+  updateDisplay();
+
+  // Rotate quote
+  const q = document.getElementById('motivationCard');
+  q.textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+}
+
+function renderLogs() {
+  const el = document.getElementById('logsList');
+  if (!state.logs.length) {
+    el.innerHTML = '<div class="empty-state">⏱️<br>Abhi koi session complete nahi hua.<br>Pehla focus session start karo!</div>';
+    return;
+  }
+  el.innerHTML = state.logs.slice(0, 20).map(l => `
+    <div class="log-item">
+      <div class="log-icon">✅</div>
+      <div class="log-info">
+        <div class="log-task">${l.task}</div>
+        <div class="log-time">${l.date}</div>
+      </div>
+      <div class="log-dur">${l.mins}m</div>
+    </div>
+  `).join('');
+}
+
+// Init
+function init() {
+  selectedMinutes = 25;
+  remainingSeconds = selectedMinutes * 60;
+  totalSeconds = remainingSeconds;
+  updateDisplay();
+  renderLogs();
+
+  // Preset buttons
+  document.getElementById('presetsRow').addEventListener('click', e => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMinutes = parseInt(btn.dataset.min);
+    resetTimer();
+  });
+
+  // Start/pause
+  document.getElementById('startBtn').addEventListener('click', startTimer);
+  document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
+  // Overlay
+  document.getElementById('overlayBtn').addEventListener('click', () => {
+    document.getElementById('overlay').classList.add('visible');
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  });
+  document.getElementById('overlayClose').addEventListener('click', () => {
+    document.getElementById('overlay').classList.remove('visible');
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  });
+
+  // Theme
+  const saved = localStorage.getItem('dhyan-theme') || 'dark';
+  document.body.dataset.theme = saved;
+  document.getElementById('themeBtn').textContent = saved === 'dark' ? '🌙' : '☀️';
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const t = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.body.dataset.theme = t;
+    document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('dhyan-theme', t);
+  });
+
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('view-' + item.dataset.view).classList.add('active');
+    });
+  });
+
+  // Notification permission
+  if (Notification.permission === 'default') {
+    setTimeout(() => Notification.requestPermission(), 3000);
+  }
+}
+
+init();
+</script>
 </body>
 </html>
-
-
